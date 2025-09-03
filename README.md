@@ -16,7 +16,7 @@ A simple React Native app to store and track blood pressure measurements.
 
 ## Installation
 ```bash
-git clone <repo-url>
+git clone https://github.com/iC4rds/blood-tracker.git
 cd blood-tracker
 npm install
 npx expo start
