@@ -25,6 +25,12 @@
     },
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c832b2a9-39b6-493c-aacd-d6daf32af998"
+      }
+    },
+    "owner": "ic4rds"
   }
 }
