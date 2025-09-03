@@ -68,7 +68,6 @@ export default function HomeScreen({ navigation }: Props) {
     if (error) {
       Alert.alert("Fehler", error.message)
     } else {
-      Alert.alert("Gespeichert", "Messung erfolgreich gespeichert")
       setSystolic("")
       setDiastolic("")
       setPulse("")
@@ -87,16 +86,30 @@ export default function HomeScreen({ navigation }: Props) {
   }
 
   const getBloodPressureCategory = (systolic: number, diastolic: number) => {
-    if (systolic < 120 && diastolic < 80) {
-      return { category: "Normal", color: "bg-green-500" }
-    } else if (systolic < 130 && diastolic < 80) {
-      return { category: "Erhöht", color: "bg-yellow-500" }
-    } else if (systolic < 140 || diastolic < 90) {
-      return { category: "Stufe 1", color: "bg-orange-500" }
-    } else {
-      return { category: "Stufe 2", color: "bg-red-500" }
+    if (systolic < 90 || diastolic < 60) {
+      return { category: "Hypotonie (zu niedrig)", color: "bg-blue-500" };
+    } 
+    // Normialbereich: 90-120 / 60-80
+    else if (systolic >= 90 && systolic <= 120 && diastolic >= 60 && diastolic <= 80) {
+      return { category: "Normal", color: "bg-green-500" };
+    } 
+    // Erhöhter Blutdruck: 121-130 / <80
+    else if (systolic > 120 && systolic <= 130 && diastolic < 80) {
+      return { category: "Erhöht", color: "bg-yellow-500" };
+    } 
+    // Hypertonie Stufe 1: 131-140 / 81-90
+    else if ((systolic > 130 && systolic <= 140) || (diastolic > 80 && diastolic <= 90)) {
+      return { category: "Hypertonie Stufe 1", color: "bg-orange-500" };
+    } 
+    // Hypertonie Stufe 2: >140 / >90
+    else if (systolic > 140 || diastolic >= 90) {
+      return { category: "Hypertonie Stufe 2", color: "bg-red-500" };
+    } 
+    else {
+      return { category: "Unbekannt", color: "bg-gray-500" };
     }
-  }
+  };
+
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -197,7 +210,7 @@ export default function HomeScreen({ navigation }: Props) {
             </View>
 
             <View className="mb-5">
-              <Text className="text-base font-semibold text-gray-700 mb-2">Puls (optional)</Text>
+              <Text className="text-base font-semibold text-gray-700 mb-2">Puls</Text>
               <TextInput
                 className="bg-white border border-gray-300 rounded-xl px-4 py-3.5 text-base text-gray-800"
                 keyboardType="numeric"
