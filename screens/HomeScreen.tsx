@@ -132,7 +132,6 @@ export default function HomeScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView className="flex-1 bg-slate-50">
-      {/* Header */}
       <View className="flex-row justify-between items-center px-5 py-4 bg-white border-b border-gray-200">
         <Text className="text-2xl font-bold text-slate-800">Meine Messungen</Text>
         <TouchableOpacity className="px-3 py-1.5" onPress={logout}>
@@ -140,7 +139,6 @@ export default function HomeScreen({ navigation }: Props) {
         </TouchableOpacity>
       </View>
 
-      {/* Measurements List */}
       <FlatList
         data={measurements}
         renderItem={renderMeasurement}
@@ -156,7 +154,6 @@ export default function HomeScreen({ navigation }: Props) {
         }
       />
 
-      {/* Add Button */}
       <TouchableOpacity
         className="absolute bottom-8 right-5 w-14 h-14 bg-blue-500 rounded-full justify-center items-center shadow-lg"
         onPress={() => setShowAddModal(true)}
@@ -164,10 +161,8 @@ export default function HomeScreen({ navigation }: Props) {
         <Text className="text-white text-2xl font-bold">+</Text>
       </TouchableOpacity>
 
-      {/* Add Measurement Modal */}
       <Modal visible={showAddModal} animationType="slide" presentationStyle="pageSheet">
         <SafeAreaView className="flex-1 bg-slate-50">
-          {/* Modal Header */}
           <View className="flex-row justify-between items-center px-5 py-4 bg-white border-b border-gray-200">
             <TouchableOpacity onPress={() => setShowAddModal(false)}>
               <Text className="text-red-500 text-base">Abbrechen</Text>
@@ -176,7 +171,6 @@ export default function HomeScreen({ navigation }: Props) {
             <View className="w-20" />
           </View>
 
-          {/* Modal Content */}
           <View className="flex-1 p-5">
             <View className="mb-5">
               <Text className="text-base font-semibold text-gray-700 mb-2">Systolisch (mmHg)</Text>
