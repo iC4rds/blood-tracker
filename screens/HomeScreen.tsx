@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { View, Text, TextInput, TouchableOpacity, Alert, FlatList, Modal, SafeAreaView } from "react-native"
+import { View, Text, TextInput, TouchableOpacity, Alert, FlatList, Modal, SafeAreaView, Platform } from "react-native"
 import type { NativeStackScreenProps } from "@react-navigation/native-stack"
 import type { RootStackParamList } from "../types/navigation"
 import { supabase } from "../lib/supabase"
@@ -89,7 +89,7 @@ export default function HomeScreen({ navigation }: Props) {
     if (systolic < 90 || diastolic < 60) {
       return { category: "Hypotonie (zu niedrig)", color: "bg-blue-500" };
     } 
-    // Normialbereich: 90-120 / 60-80
+    // Normalbereich: 90-120 / 60-80
     else if (systolic >= 90 && systolic <= 120 && diastolic >= 60 && diastolic <= 80) {
       return { category: "Normal", color: "bg-green-500" };
     } 
@@ -145,7 +145,9 @@ export default function HomeScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView className="flex-1 bg-slate-50">
-      <View className="flex-row justify-between items-center px-5 py-4 bg-white border-b border-gray-200">
+      <View className={`flex-row justify-between items-center px-5 py-4 bg-white border-b border-gray-200 
+        ${Platform.OS === 'android' ? 'pt-10' : ''}`}
+      >
         <Text className="text-2xl font-bold text-slate-800">Meine Messungen</Text>
         <TouchableOpacity className="px-3 py-1.5" onPress={logout}>
           <Text className="text-red-500 text-base">Abmelden</Text>
