@@ -16,6 +16,7 @@ interface Measurement {
 }
 
 export default function HomeScreen({ navigation }: Props) {
+  const [loading, setLoading] = useState(true)
   const [measurements, setMeasurements] = useState<Measurement[]>([])
   const [showAddModal, setShowAddModal] = useState(false)
   const [systolic, setSystolic] = useState("")
@@ -27,6 +28,8 @@ export default function HomeScreen({ navigation }: Props) {
   }, [])
 
   const loadMeasurements = async () => {
+    setLoading(true)
+
     const {
       data: { user },
     } = await supabase.auth.getUser()
@@ -43,6 +46,7 @@ export default function HomeScreen({ navigation }: Props) {
       Alert.alert("Fehler", error.message)
     } else {
       setMeasurements(data || [])
+      setLoading(false)
     }
   }
 
@@ -120,6 +124,14 @@ export default function HomeScreen({ navigation }: Props) {
       hour: "2-digit",
       minute: "2-digit",
     })
+  }
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <Text className="text-slate-800">Lade Messungen...</Text>
+      </View>
+    )
   }
 
   const renderMeasurement = ({ item }: { item: Measurement }) => {
