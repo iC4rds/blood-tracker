@@ -22,6 +22,9 @@ export default function HomeScreen({ navigation }: Props) {
   const [systolic, setSystolic] = useState("")
   const [diastolic, setDiastolic] = useState("")
   const [pulse, setPulse] = useState("")
+  const [selectedMeasurement, setSelectedMeasurement] = useState<Measurement | null>(null);
+  const [showOptions, setShowOptions] = useState<string | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
     loadMeasurements()
@@ -79,6 +82,54 @@ export default function HomeScreen({ navigation }: Props) {
       loadMeasurements()
     }
   }
+
+  const updateMeasurement = async () => {
+    if (!selectedMeasurement) return;
+
+    const { error } = await supabase
+      .from("measurements")
+      .update({
+        systolic: Number.parseInt(systolic, 10),
+        diastolic: Number.parseInt(diastolic, 10),
+        pulse: pulse ? Number.parseInt(pulse, 10) : null,
+      })
+      .eq("id", selectedMeasurement.id);
+
+    if (error) {
+      Alert.alert("Fehler", error.message);
+    } else {
+      setShowEditModal(false);
+      setSelectedMeasurement(null);
+      setSystolic("");
+      setDiastolic("");
+      setPulse("");
+      loadMeasurements();
+    }
+  };
+
+  const deleteMeasurement = async (id: string) => {
+    Alert.alert(
+      "Löschen bestätigen",
+      "Möchtest du diese Messung wirklich löschen?",
+      [
+        { text: "Abbrechen", style: "cancel" },
+        {
+          text: "Löschen",
+          style: "destructive",
+          onPress: async () => {
+            const { error } = await supabase.from("measurements").delete().eq("id", id);
+
+            if (error) {
+              Alert.alert("Fehler", error.message);
+            } else {
+              loadMeasurements();
+              setShowOptions(null);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const logout = async () => {
     await supabase.auth.signOut()
@@ -138,20 +189,50 @@ export default function HomeScreen({ navigation }: Props) {
     const { category, color } = getBloodPressureCategory(item.systolic, item.diastolic)
 
     return (
-      <View className="bg-white rounded-xl p-4 mb-3 shadow-sm border border-gray-100">
-        <View className="flex-row justify-between items-center mb-2">
-          <View className={`${color} px-2 py-1 rounded-md`}>
-            <Text className="text-white text-xs font-semibold">{category}</Text>
+      <TouchableOpacity
+        onLongPress={() => setShowOptions(item.id)}
+        activeOpacity={0.8}
+      >
+        <View className="bg-white rounded-xl p-4 mb-3 shadow-sm border border-gray-100">
+          <View className="flex-row justify-between items-center mb-2">
+            <View className={`${color} px-2 py-1 rounded-md`}>
+              <Text className="text-white text-xs font-semibold">{category}</Text>
+            </View>
+            <Text className="text-slate-500 text-sm">{formatDate(item.created_at)}</Text>
           </View>
-          <Text className="text-slate-500 text-sm">{formatDate(item.created_at)}</Text>
+          <View className="flex-row justify-between items-center">
+            <Text className="text-xl font-bold text-slate-800">
+              {item.systolic}/{item.diastolic} mmHg
+            </Text>
+            {item.pulse && <Text className="text-base text-slate-600">Puls: {item.pulse} bpm</Text>}
+          </View>
+
+          {showOptions === item.id && (
+            <View className="flex-row justify-end space-x-3 mt-3">
+              <TouchableOpacity
+                className="bg-blue-500 px-3 py-1 rounded-md mr-2"
+                onPress={() => {
+                  setSelectedMeasurement(item);
+                  setSystolic(item.systolic.toString());
+                  setDiastolic(item.diastolic.toString());
+                  setPulse(item.pulse ? item.pulse.toString() : "");
+                  setShowEditModal(true);
+                  setShowOptions(null);
+                }}
+              >
+                <Text className="text-white font-medium">Edit</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="bg-red-500 px-3 py-1 rounded-md"
+                onPress={() => deleteMeasurement(item.id)}
+              >
+                <Text className="text-white font-medium">Delete</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
-        <View className="flex-row justify-between items-center">
-          <Text className="text-xl font-bold text-slate-800">
-            {item.systolic}/{item.diastolic} mmHg
-          </Text>
-          {item.pulse && <Text className="text-base text-slate-600">Puls: {item.pulse} bpm</Text>}
-        </View>
-      </View>
+      </TouchableOpacity>
     )
   }
 
@@ -236,6 +317,60 @@ export default function HomeScreen({ navigation }: Props) {
             </View>
 
             <TouchableOpacity className="bg-blue-500 rounded-xl py-4 mt-5" onPress={saveMeasurement}>
+              <Text className="text-white text-base font-semibold text-center">Speichern</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </Modal>
+
+      <Modal visible={showEditModal} animationType="slide" presentationStyle="pageSheet">
+        <SafeAreaView className="flex-1 bg-slate-50">
+          <View className="flex-row justify-between items-center px-5 py-4 bg-white border-b border-gray-200">
+            <TouchableOpacity onPress={() => setShowAddModal(false)}>
+              <Text className="text-red-500 text-base">Abbrechen</Text>
+            </TouchableOpacity>
+            <Text className="text-lg font-semibold text-slate-800">Messung ändern</Text>
+            <View className="w-20" />
+          </View>
+
+          <View className="flex-1 p-5">
+            <View className="mb-5">
+              <Text className="text-base font-semibold text-gray-700 mb-2">Systolisch (mmHg)</Text>
+              <TextInput
+                className="bg-white border border-gray-300 rounded-xl px-4 py-3.5 text-base text-gray-800"
+                keyboardType="numeric"
+                value={systolic}
+                onChangeText={setSystolic}
+                placeholder="120"
+                placeholderTextColor="#9ca3af"
+              />
+            </View>
+
+            <View className="mb-5">
+              <Text className="text-base font-semibold text-gray-700 mb-2">Diastolisch (mmHg)</Text>
+              <TextInput
+                className="bg-white border border-gray-300 rounded-xl px-4 py-3.5 text-base text-gray-800"
+                keyboardType="numeric"
+                value={diastolic}
+                onChangeText={setDiastolic}
+                placeholder="80"
+                placeholderTextColor="#9ca3af"
+              />
+            </View>
+
+            <View className="mb-5">
+              <Text className="text-base font-semibold text-gray-700 mb-2">Puls</Text>
+              <TextInput
+                className="bg-white border border-gray-300 rounded-xl px-4 py-3.5 text-base text-gray-800"
+                keyboardType="numeric"
+                value={pulse}
+                onChangeText={setPulse}
+                placeholder="70"
+                placeholderTextColor="#9ca3af"
+              />
+            </View>
+
+            <TouchableOpacity className="bg-blue-500 rounded-xl py-4 mt-5" onPress={updateMeasurement}>
               <Text className="text-white text-base font-semibold text-center">Speichern</Text>
             </TouchableOpacity>
           </View>
